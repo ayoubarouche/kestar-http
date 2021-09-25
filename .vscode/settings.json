@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "in.h": "c",
+        "unistd.h": "c",
+        "http_server_functions.h": "c",
+        "http_server.h": "c",
+        "http_write.h": "c",
+        "librarys_included.h": "c",
+        "helpers.h": "c"
+    }
+}

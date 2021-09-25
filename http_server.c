@@ -1,101 +1,10 @@
-#include <sys/socket.h>
-#include <stdio.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-// for the int value returned by the socket function :
-int server_fd;
-
-// variable to handle the address of our http server
-struct sockaddr_in address;
-
-// the size of the address
-int addrlen = sizeof(address);
-// the port used by the http server
-const int PORT = 8080;
-
-// will contains all the addresses of the http server clients
-struct sockaddr client_addresses[10];
-
-//will run through the client_addresses ;
-int client_addresses_tour = 0;
-
-//size of the buffer of messages received from the client
-
-#define BUFFER_SIZE 30000
-
-//the http header :
-char *http_header = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: ";
-char return_to_line[] = "\n\n";
-
-// defining a new socket
-void define_socket()
-{
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
-}
-void println()
-{
-    printf("\n");
-}
-
-//function to send  hello messages for first tests :
-
-void send_to_client(int socket, char *message_to_send)
-{
-    write(socket, message_to_send, strlen(message_to_send));
-}
-
-void read_from_client(int socket, char *buffer)
-{
-    int valread = 0;
-
-    // wait to get the message from the client
-    while (valread <= 0)
-    {
-        valread = read(socket, buffer, BUFFER_SIZE);
-    }
-
-    printf("the client : %s", buffer);
-    println();
-    printf("the size of message is : %d", sizeof(buffer));
-    println();
-    return;
-}
-//function to converte int to char
-    int number_of_chars_to_allow_in_memory(int value){
-        //look for 102
-        int result = 0;
-        do{
-            result ++;
-        }
-        while((value=value/10));
-         
-        return result;
-    }
-//function to concatnate the http header to the page message :
-void concatenate(char result_buffer [] , char message[]) // concatenate function will put result in result buffer buffer 
-{
-    // get the length of message :
-
-    
-    
-    int char_length = number_of_chars_to_allow_in_memory(strlen(message));
-    char *message_length = (char *) malloc(sizeof(char) * char_length) ;
-   // strcat(message_length , google);
-    sprintf(message_length, "%d", strlen(message));
-    // printf("the message length is : %s", message_length);
-    // println();
-    // //  the final message that will be sent to the client server :
-    
-    // // add the message length
-    strcat(result_buffer,message_length);
-    strcat(result_buffer , return_to_line);
-    strcat(result_buffer , message);
-    
-}
-
+#include "helpers/helpers.c"
+#include "helpers/http_server.h"
+#include "helpers/http_server_function.c"
+#include "http-read/http_read.h"
+#include "http-write/http_write.h"
+#include "html_file_read.c"
+#ifdef __HTTP_SERVER_CONFIGURATION__
 int main()
 {
     // the socket of the client :
@@ -169,29 +78,30 @@ int main()
 
             while (1)
             {
-                char buffer[30000] = {0}; // this buffer will contains the message sent by the client :
+                char buffer[40000] = {0}; // this buffer will contains the message sent by the client :
                 read_from_client(new_socket, buffer);
-
+                printf("the buffer is : %s",buffer);
+              //  char *path = get_requested_path(buffer);
+               // printf("the path is : %s", path);
                 //char *message = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-                char *message = "<html><body><h1>AYOUB AROUCHE IS THE BEST ENGINEER IN THE WORLD</h1></body></html>";
+                char *message = render("html/index.html");
                 //   char header[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: ";
                 //   char last_values[] = "12\n\nHello zorld!";
                 //   strcat(header , last_values);
                 //  char * result = "hello wrold from the server";
                 char result[] = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
-              
-               
-              
+
                 // int mess_leng = (int)strlen(message);
                 // printf("the message length is : %d",mess_leng);
                 // sprintf(message_length, "%d", strlen(message));
                 // strcat(result , message_length);
                 // printf("%s", message_length);
-               
-                
-                concatenate(result , message);
+
+                concatenate(result, message);
                 send_to_client(new_socket, result);
-               // send_to_client(new_socket , new_result);
+                free(message);
+
+                // send_to_client(new_socket , new_result);
             }
             close(new_socket);
             // this is for sending to the client :
@@ -201,3 +111,4 @@ int main()
 
     return 0;
 }
+#endif
